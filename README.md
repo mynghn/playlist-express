@@ -1,2 +1,3 @@
-# spotify2youtube
-Transfer playlists from Spotify to YouTube
+# Playlist Express
+
+Transfer a Spotify playlist to your YouTube account.
