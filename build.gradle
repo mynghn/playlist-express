@@ -1,5 +1,10 @@
 plugins {
     id 'java'
+    id "io.freefair.lombok" version "8.3"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
 }
 
 group 'mynghn'
@@ -10,8 +15,17 @@ repositories {
 }
 
 dependencies {
+    implementation 'info.picocli:picocli:4.7.5'
+    annotationProcessor 'info.picocli:picocli-codegen:4.7.5'
+
+    implementation 'io.github.openfeign:feign-core:12.5'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 }
 
 test {
