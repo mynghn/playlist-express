@@ -1,8 +1,8 @@
 package mynghn;
 
 import java.util.concurrent.Callable;
-import mynghn.spotify.model.SpotifyPlaylist;
 import mynghn.spotify.facade.SpotifyPlaylistRetrievalProcessor;
+import mynghn.spotify.model.SpotifyPlaylist;
 import mynghn.youtube.facade.YouTubePlaylistCreationProcessor;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
