@@ -3,13 +3,14 @@ package mynghn.spotify.client;
 import feign.Body;
 import feign.Feign;
 import feign.Headers;
+import feign.Param;
 import feign.Request;
 import feign.RequestLine;
 import mynghn.common.auth.BasicAuthHeaderBuilder;
+import mynghn.spotify.credential.SpotifyClientCredentials;
 import mynghn.spotify.enums.BaseUrl;
 import mynghn.spotify.enums.EndPointTemplates;
 import mynghn.spotify.message.auth.response.auth.SpotifyAuthResponse;
-import mynghn.spotify.model.SpotifyClientCredentials;
 
 
 public interface SpotifyAuthClient {
@@ -41,7 +42,7 @@ public interface SpotifyAuthClient {
     @Headers({"Content-Type: application/x-www-form-urlencoded",
             "Authorization: {basicAuthHeader}"})
     @Body("grant_type=client_credentials")
-    SpotifyAuthResponse obtainTokenThroughClientCredentialsFlow(String basicAuthHeader);
+    SpotifyAuthResponse obtainTokenThroughClientCredentialsFlow(@Param String basicAuthHeader);
 
     /**
      * Obtain Spotify Web API access token through <a
