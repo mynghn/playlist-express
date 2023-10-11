@@ -14,16 +14,17 @@ import picocli.CommandLine.Option;
         mixinStandardHelpOptions = true)
 public class App implements Callable<Integer> {
 
-    @Option(names = {"-l", "--src-link"}, description = "Source playlist link (URL)")
+    @Option(names = {"-l", "--src-link"}, description = "Source playlist link (URL)",
+            required = true)
     private String srcLink;
 
     @Override
     public Integer call() throws Exception {
-        SpotifyPlaylistRetrievalProcessor spotifyProcessor = new SpotifyPlaylistRetrievalProcessor();
-        SpotifyPlaylist spotifyPlaylist = spotifyProcessor.fetch(srcLink);
+        SpotifyPlaylistRetrievalProcessor retrievalProcessor = new SpotifyPlaylistRetrievalProcessor();
+        SpotifyPlaylist spotifyPlaylist = retrievalProcessor.fetch(srcLink);
 
-        YouTubePlaylistCreationProcessor youtubeProcessor = new YouTubePlaylistCreationProcessor();
-        youtubeProcessor.create(spotifyPlaylist);
+        YouTubePlaylistCreationProcessor creationProcessor = new YouTubePlaylistCreationProcessor();
+        creationProcessor.create(spotifyPlaylist);
 
         return 0;
     }
