@@ -4,10 +4,10 @@ import mynghn.common.credential.CredentialManager;
 import mynghn.common.ui.ConsolePrinter;
 import mynghn.spotify.client.SpotifyAuthClient;
 import mynghn.spotify.client.SpotifyPlaylistRetrievalClient;
+import mynghn.spotify.credential.SpotifyClientCredentials;
 import mynghn.spotify.credential.SpotifyCredentialManager;
 import mynghn.spotify.message.auth.response.auth.SpotifyAuthResponse;
 import mynghn.spotify.message.retrieval.response.SpotifyPlaylistRetrievalResponse;
-import mynghn.spotify.model.SpotifyClientCredentials;
 import mynghn.spotify.model.SpotifyPlaylist;
 import mynghn.spotify.util.SpotifyLinkParser;
 

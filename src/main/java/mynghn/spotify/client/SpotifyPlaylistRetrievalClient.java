@@ -31,16 +31,16 @@ public interface SpotifyPlaylistRetrievalClient {
     /**
      * Retrieve Spotify playlist information
      *
-     * @param id      Spotify ID of the playlist
-     * @param queries Request query parameters
+     * @param id     Spotify ID of the playlist
+     * @param params Request query parameters
      * @return API response with playlist information
      */
     @RequestLine(EndPointTemplates.RETRIEVE_PLAYLIST)
     SpotifyPlaylistRetrievalResponse fetch(@Param String id,
-            @QueryMap SpotifyPlaylistRetrievalQueryParams queries);
+            @QueryMap SpotifyPlaylistRetrievalQueryParams params);
 
     /**
-     * Retrieve Spotify playlist information w/ default query parameter options
+     * Retrieve Spotify playlist information (w/ default query parameter options)
      *
      * @param id      Spotify ID of the playlist
      * @return API response with playlist information

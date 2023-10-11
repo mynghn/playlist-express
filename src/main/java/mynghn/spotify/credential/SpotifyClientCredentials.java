@@ -1,4 +1,4 @@
-package mynghn.spotify.model;
+package mynghn.spotify.credential;
 
 /**
  * Data object of registered Spotify App's client credentials
