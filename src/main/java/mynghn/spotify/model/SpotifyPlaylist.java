@@ -1,12 +1,12 @@
 package mynghn.spotify.model;
 
+import java.util.List;
 import mynghn.spotify.message.retrieval.response.SpotifyPlaylistRetrievalResponse;
 
-public record SpotifyPlaylist() {
-
-    // TODO: Define properties
+// TODO: Define properties
+public record SpotifyPlaylist(List<Track> tracks) {
 
     public static SpotifyPlaylist fromResponse(SpotifyPlaylistRetrievalResponse response) {
-        return new SpotifyPlaylist();
+        return new SpotifyPlaylist(List.of()); // FIXME: Fill w/ real data
     }
 }
