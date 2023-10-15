@@ -1,11 +1,14 @@
 package mynghn.spotify.facade;
 
+import mynghn.common.config.AppConfigs;
 import mynghn.common.credential.CredentialManager;
 import mynghn.common.ui.ConsolePrinter;
 import mynghn.spotify.client.SpotifyAuthClient;
 import mynghn.spotify.client.SpotifyPlaylistRetrievalClient;
+import mynghn.spotify.credential.LocalSpotifyCredentialReader;
 import mynghn.spotify.credential.SpotifyClientCredentials;
-import mynghn.spotify.credential.SpotifyCredentialManager;
+import mynghn.spotify.credential.SpotifyCredentialsEnvVarReader;
+import mynghn.spotify.credential.SpotifyCredentialsJsonFileReader;
 import mynghn.spotify.message.auth.response.auth.SpotifyAuthResponse;
 import mynghn.spotify.message.retrieval.response.SpotifyPlaylistRetrievalResponse;
 import mynghn.spotify.model.SpotifyPlaylist;
@@ -19,7 +22,9 @@ public class SpotifyPlaylistRetrievalProcessor {
 
     public SpotifyPlaylistRetrievalProcessor() {
         printer = new ConsolePrinter();
-        credentialManager = new SpotifyCredentialManager();
+        credentialManager = new LocalSpotifyCredentialReader(
+                new SpotifyCredentialsJsonFileReader(new AppConfigs()),
+                new SpotifyCredentialsEnvVarReader());
     }
 
     private static SpotifyAuthClient buildAuthClient() {
