@@ -1,7 +1,6 @@
 package mynghn.spotify.credential;
 
 import mynghn.common.credential.CredentialManager;
-import mynghn.spotify.model.SpotifyClientCredentials;
 
 public class SpotifyCredentialManager implements CredentialManager<SpotifyClientCredentials> {
 
