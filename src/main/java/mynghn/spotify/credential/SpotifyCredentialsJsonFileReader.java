@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class SpotifyCredentialsJsonFileReader {
     private final AppConfigs configs;
 
     public SpotifyClientCredentials read() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(getFilePath()))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(getFileName()))) {
             return new Gson().fromJson(reader, SpotifyClientCredentials.class);
         } catch (FileNotFoundException e) {
             return null;
@@ -41,7 +42,8 @@ public class SpotifyCredentialsJsonFileReader {
         return readOptional().orElseGet(credentialsSupplier);
     }
 
-    private String getFilePath() {
-        return configs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH.toString());
+    private String getFileName() {
+        return Objects.requireNonNull(getClass().getResource(
+                configs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH.toString()))).getFile();
     }
 }
