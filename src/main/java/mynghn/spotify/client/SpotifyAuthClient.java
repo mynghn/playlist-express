@@ -6,6 +6,7 @@ import feign.Headers;
 import feign.Param;
 import feign.Request;
 import feign.RequestLine;
+import feign.gson.GsonDecoder;
 import mynghn.common.auth.BasicAuthHeaderBuilder;
 import mynghn.spotify.credential.SpotifyClientCredentials;
 import mynghn.spotify.enums.BaseUrl;
@@ -22,8 +23,8 @@ public interface SpotifyAuthClient {
      */
     static SpotifyAuthClient connect() {
         return Feign.builder()
-                // TODO: Add response decoder
                 // TODO: Add error decoder
+                .decoder(new GsonDecoder())
                 .options(new Request.Options()) // with default options
                 .target(SpotifyAuthClient.class, BaseUrl.AUTH.getValue());
     }
@@ -42,7 +43,7 @@ public interface SpotifyAuthClient {
     @Headers({"Content-Type: application/x-www-form-urlencoded",
             "Authorization: {basicAuthHeader}"})
     @Body("grant_type=client_credentials")
-    SpotifyAuthResponse obtainTokenThroughClientCredentialsFlow(@Param String basicAuthHeader);
+    SpotifyAuthResponse obtainTokenThroughClientCredentialsFlow(@Param("basicAuthHeader") String basicAuthHeader);
 
     /**
      * Obtain Spotify Web API access token through <a
