@@ -21,8 +21,7 @@ public class AppConfigs {
     }
 
     private static String buildDefaultConfigFilePath() {
-        return Objects.requireNonNull(
-                AppConfigs.class.getClassLoader().getResource("/app.properties")).getPath();
+        return Objects.requireNonNull(AppConfigs.class.getResource("/app.properties")).getPath();
     }
 
     public String get(String configKey) {
