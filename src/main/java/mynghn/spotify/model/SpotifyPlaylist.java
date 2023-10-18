@@ -1,12 +1,9 @@
 package mynghn.spotify.model;
 
 import java.util.List;
-import mynghn.spotify.message.retrieval.response.SpotifyPlaylistRetrievalResponse;
+import lombok.Builder;
 
-// TODO: Define properties
-public record SpotifyPlaylist(List<Track> tracks) {
+@Builder
+public record SpotifyPlaylist(String description, String id, String name, List<Track> tracks) {
 
-    public static SpotifyPlaylist fromResponse(SpotifyPlaylistRetrievalResponse response) {
-        return new SpotifyPlaylist(List.of()); // FIXME: Fill w/ real data
-    }
 }

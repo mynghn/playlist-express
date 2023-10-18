@@ -12,6 +12,7 @@ import mynghn.spotify.credential.SpotifyCredentialsJsonFileReader;
 import mynghn.spotify.message.auth.response.auth.SpotifyAuthResponse;
 import mynghn.spotify.message.retrieval.response.SpotifyPlaylistRetrievalResponse;
 import mynghn.spotify.model.SpotifyPlaylist;
+import mynghn.spotify.util.PlaylistConverter;
 import mynghn.spotify.util.SpotifyLinkParser;
 
 public class SpotifyPlaylistRetrievalProcessor {
@@ -59,6 +60,6 @@ public class SpotifyPlaylistRetrievalProcessor {
 
         printer.print("Spotify playlist retrieval done!");
 
-        return SpotifyPlaylist.fromResponse(retrievalResponse);
+        return PlaylistConverter.fromResponse(retrievalResponse);
     }
 }
