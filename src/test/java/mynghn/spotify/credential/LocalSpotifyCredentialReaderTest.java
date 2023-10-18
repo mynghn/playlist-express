@@ -1,10 +1,12 @@
 package mynghn.spotify.credential;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import java.util.Objects;
+import java.util.Optional;
 import mynghn.common.config.AppConfigKey;
 import mynghn.common.config.AppConfigs;
 import org.junit.jupiter.api.Test;
@@ -21,7 +23,7 @@ class LocalSpotifyCredentialReaderTest {
         // Stub AppConfigs
         AppConfigs mockAppConfigs = mock(AppConfigs.class);
         when(mockAppConfigs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH.toString())).thenReturn(
-                Objects.requireNonNull(getClass().getResource(testCredentialsPath)).getPath());
+                testCredentialsPath);
 
         final LocalSpotifyCredentialReader sut = new LocalSpotifyCredentialReader(
                 new SpotifyCredentialsJsonFileReader(mockAppConfigs),
@@ -38,24 +40,23 @@ class LocalSpotifyCredentialReaderTest {
     @Test
     void spotifyCredentialsLoadedFromEnvVarsAndProvided() {
         /* Arrange */
-        final String dummyCredentialsPath = "/path/that/does/not/exist";
         final String testClientId = "Test ID";
         final String testClientSecret = "Test Secret";
         final SpotifyClientCredentials testCredentials = new SpotifyClientCredentials(testClientId,
                 testClientSecret);
 
-        // Stub AppConfigs
-        AppConfigs mockAppConfigs = mock(AppConfigs.class);
-        when(mockAppConfigs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH.toString())).thenReturn(
-                dummyCredentialsPath);
+        // Stub SpotifyCredentialsJsonFileReader
+        SpotifyCredentialsJsonFileReader spyFileReader = spy(
+                new SpotifyCredentialsJsonFileReader(null));
+        doReturn(Optional.empty()).when(spyFileReader).readOptional();
 
         // Stub SpotifyCredentialsEnvVarReader
         SpotifyCredentialsEnvVarReader mockEnvVarReader = mock(
                 SpotifyCredentialsEnvVarReader.class);
         when(mockEnvVarReader.read()).thenReturn(testCredentials);
 
-        final LocalSpotifyCredentialReader sut = new LocalSpotifyCredentialReader(
-                new SpotifyCredentialsJsonFileReader(mockAppConfigs), mockEnvVarReader);
+        LocalSpotifyCredentialReader sut = new LocalSpotifyCredentialReader(spyFileReader,
+                mockEnvVarReader);
 
         /* Act */
         SpotifyClientCredentials credentialsFromSUT = sut.getCredentials();
