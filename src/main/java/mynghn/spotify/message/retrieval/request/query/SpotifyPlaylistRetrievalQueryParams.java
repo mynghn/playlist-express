@@ -7,7 +7,7 @@ public record SpotifyPlaylistRetrievalQueryParams(
         String fields,
         @Param("additional_types") String additionalTypes) {
 
-    public static SpotifyPlaylistRetrievalQueryParams empty() {
-        return new SpotifyPlaylistRetrievalQueryParams(null, null, null);
+    public static SpotifyPlaylistRetrievalQueryParams buildDefault() {
+        return new SpotifyPlaylistRetrievalQueryParams("KR", null, null);
     }
 }

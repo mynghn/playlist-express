@@ -62,3 +62,6 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### API credentials ###
+**/resources/**/credential/*

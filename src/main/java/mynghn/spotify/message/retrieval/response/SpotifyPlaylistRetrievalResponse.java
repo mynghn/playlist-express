@@ -1,6 +1,8 @@
 package mynghn.spotify.message.retrieval.response;
 
-public record SpotifyPlaylistRetrievalResponse() {
+import mynghn.spotify.message.SpotifyPaginatedResponse;
 
-    // TODO: Define properties
+public record SpotifyPlaylistRetrievalResponse(String description, String id, String name,
+                                               SpotifyPaginatedResponse<SpotifyPlaylistItemRetrievalResponse> tracks) {
+
 }
