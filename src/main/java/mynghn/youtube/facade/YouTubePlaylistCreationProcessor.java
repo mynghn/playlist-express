@@ -16,11 +16,10 @@ import mynghn.youtube.credential.YouTubeCredentialManager;
 import mynghn.youtube.message.auth.response.YouTubeAuthStep1Response;
 import mynghn.youtube.message.auth.response.YouTubeAuthTokenResponse;
 import mynghn.youtube.message.creation.response.YouTubePlaylistCreationResponse;
-import mynghn.youtube.message.search.response.YouTubeSearchResponse;
 import mynghn.youtube.message.search.response.YouTubeSearchResult;
 import mynghn.youtube.model.YouTubePlaylist;
 import mynghn.youtube.util.YouTubePlaylistLinkBuilder;
-import mynghn.youtube.util.YouTubeSearchResultEvaluator;
+import mynghn.youtube.util.YouTubeVideoFinder;
 
 public class YouTubePlaylistCreationProcessor {
 
@@ -28,8 +27,8 @@ public class YouTubePlaylistCreationProcessor {
 
     private final CredentialManager<YouTubeClientCredentials> credentialManager;
 
-    private final YouTubeSearchClient searchClient;
     private final YouTubeAuthClient authClient;
+    private final YouTubeVideoFinder videoFinder;
 
     public YouTubePlaylistCreationProcessor() {
         printer = new ConsolePrinter();
@@ -37,17 +36,17 @@ public class YouTubePlaylistCreationProcessor {
 
         final YouTubeClientCredentials credentials = credentialManager.getCredentials();
 
-        searchClient = YouTubeSearchClient.connect(credentials.apiKey());
+        videoFinder = new YouTubeVideoFinder(YouTubeSearchClient.connect(credentials.apiKey()));
         authClient = YouTubeAuthClient.connect();
     }
 
     public YouTubePlaylist create(SpotifyPlaylist source) throws InterruptedException {
         // search for corresponding videos
-        printer.print("Searching for YouTube videos to put in playlist...");
+        printer.print("Searching for YouTube videos match tracks in source playlist...");
 
         final List<YouTubeSearchResult> searchResults = source.tracks().stream()
-                .map(this::findCorrespondingVideo)
-                .filter(Optional::isPresent) // FIXME: Handle properly w/ search failures
+                .map(this::searchTrackAndNotifyIfNotFound)
+                .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
 
@@ -84,13 +83,14 @@ public class YouTubePlaylistCreationProcessor {
         return new YouTubePlaylist(); // FIXME: Build YouTube playlist object with real data
     }
 
-    private Optional<YouTubeSearchResult> findCorrespondingVideo(Track spotifyTrack) {
-        YouTubeSearchResponse searchResponse = searchClient.searchMusic(
-                ""); // FIXME: Replace w/ real query
-        return searchResponse.items().stream()
-                .filter((searchResult) -> YouTubeSearchResultEvaluator.match(searchResult,
-                        spotifyTrack))
-                .findFirst();
+    private Optional<YouTubeSearchResult> searchTrackAndNotifyIfNotFound(Track spotifyTrack) {
+        Optional<YouTubeSearchResult> searchResultOptional = videoFinder.findVideoMatch(
+                spotifyTrack);
+        if (searchResultOptional.isEmpty()) {
+            printer.print(
+                    MessageFormat.format("Failed to find YouTube video for {0}", spotifyTrack));
+        }
+        return searchResultOptional;
     }
 
     // FIXME: Refactor to independent responsibility
@@ -101,7 +101,7 @@ public class YouTubePlaylistCreationProcessor {
 
         final String instructionMessageTemplate = """
                 To process further and create a playlist in your YouTube account, permission should be granted.
-                
+                                
                 Please follow the steps below:
                  
                  1. Go to the following link: {0}
