@@ -1,11 +1,12 @@
 package mynghn.spotify.facade;
 
+import mynghn.common.config.AppConfigs;
 import mynghn.spotify.model.SpotifyPlaylist;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class SpotifyPlaylistRetrievalProcessorIntegrationTest {
-    SpotifyPlaylistRetrievalProcessor sut = new SpotifyPlaylistRetrievalProcessor();
+    SpotifyPlaylistRetrievalProcessor sut = new SpotifyPlaylistRetrievalProcessor(new AppConfigs());
 
     @Test
     void spotifyPlaylistFetchedOk() {

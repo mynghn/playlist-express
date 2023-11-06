@@ -1,10 +1,10 @@
 package mynghn.spotify.facade;
 
-import java.util.Objects;
 import mynghn.common.config.AppConfigKey;
 import mynghn.common.config.AppConfigs;
 import mynghn.common.credential.CredentialManager;
 import mynghn.common.ui.ConsolePrinter;
+import mynghn.common.util.FileUtils;
 import mynghn.spotify.client.SpotifyAuthClient;
 import mynghn.spotify.client.SpotifyPlaylistRetrievalClient;
 import mynghn.spotify.credential.LocalSpotifyCredentialsReader;
@@ -26,13 +26,17 @@ public class SpotifyPlaylistRetrievalProcessor {
 
     private final CredentialManager<SpotifyClientCredentials> credentialManager;
 
-    public SpotifyPlaylistRetrievalProcessor() {
-        AppConfigs configs = new AppConfigs();
-
+    public SpotifyPlaylistRetrievalProcessor(AppConfigs configs) {
         printer = new ConsolePrinter();
 
-        credentialManager = new LocalSpotifyCredentialsReader(new SpotifyCredentialsJsonFileReader(
-                getResourceFullPath(configs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH))),
+        credentialManager = buildCredentialManager(configs);
+    }
+
+    private static CredentialManager<SpotifyClientCredentials> buildCredentialManager(
+            AppConfigs configs) {
+        return new LocalSpotifyCredentialsReader(
+                new SpotifyCredentialsJsonFileReader(FileUtils.getResourceFullPath(
+                        configs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH))),
                 new SpotifyCredentialsEnvVarReader(CLIENT_ID_ENV_VAR_NAME,
                         CLIENT_SECRET_ENV_VAR_NAME));
     }
@@ -70,9 +74,5 @@ public class SpotifyPlaylistRetrievalProcessor {
         printer.print("Spotify playlist retrieval done!");
 
         return PlaylistConverter.fromResponse(retrievalResponse);
-    }
-
-    private String getResourceFullPath(String resourcePath) {
-        return Objects.requireNonNull(getClass().getResource(resourcePath)).getFile();
     }
 }

@@ -4,15 +4,20 @@ import feign.FeignException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
+import mynghn.common.config.AppConfigKey;
+import mynghn.common.config.AppConfigs;
 import mynghn.common.credential.CredentialManager;
 import mynghn.common.ui.ConsolePrinter;
+import mynghn.common.util.FileUtils;
 import mynghn.spotify.model.SpotifyPlaylist;
 import mynghn.spotify.model.Track;
 import mynghn.youtube.client.YouTubeAuthClient;
 import mynghn.youtube.client.YouTubePlaylistCreationClient;
 import mynghn.youtube.client.YouTubeSearchClient;
+import mynghn.youtube.credential.LocalYouTubeCredentialsLazyReader;
 import mynghn.youtube.credential.YouTubeClientCredentials;
-import mynghn.youtube.credential.YouTubeCredentialManager;
+import mynghn.youtube.credential.YouTubeCredentialsEnvVarReader;
+import mynghn.youtube.credential.YouTubeCredentialsJsonFileReader;
 import mynghn.youtube.message.auth.response.YouTubeAuthStep1Response;
 import mynghn.youtube.message.auth.response.YouTubeAuthTokenResponse;
 import mynghn.youtube.message.creation.response.YouTubePlaylistCreationResponse;
@@ -23,21 +28,35 @@ import mynghn.youtube.util.YouTubeVideoFinder;
 
 public class YouTubePlaylistCreationProcessor {
 
+    private static final String API_KEY_ENV_VAR_NAME = "YOUTUBE_API_KEY";
+    private static final String CLIENT_ID_ENV_VAR_NAME = "YOUTUBE_CLIENT_ID";
+    private static final String CLIENT_SECRET_ENV_VAR_NAME = "YOUTUBE_CLIENT_SECRET";
+
     private final ConsolePrinter printer;
-
     private final CredentialManager<YouTubeClientCredentials> credentialManager;
-
     private final YouTubeAuthClient authClient;
     private final YouTubeVideoFinder videoFinder;
 
-    public YouTubePlaylistCreationProcessor() {
+    public YouTubePlaylistCreationProcessor(AppConfigs configs) {
         printer = new ConsolePrinter();
-        credentialManager = new YouTubeCredentialManager();
 
-        final YouTubeClientCredentials credentials = credentialManager.getCredentials();
+        credentialManager = buildCredentialManager(configs);
 
-        videoFinder = new YouTubeVideoFinder(YouTubeSearchClient.connect(credentials.apiKey()));
+        videoFinder = new YouTubeVideoFinder(
+                YouTubeSearchClient.connect(credentialManager.getCredentials().apiKey()));
+
         authClient = YouTubeAuthClient.connect();
+    }
+
+    private static CredentialManager<YouTubeClientCredentials> buildCredentialManager(
+            AppConfigs configs) {
+        return new LocalYouTubeCredentialsLazyReader(
+                new YouTubeCredentialsJsonFileReader(FileUtils.getResourceFullPath(
+                        configs.get(AppConfigKey.YOUTUBE_CREDENTIAL_PATH))),
+                new YouTubeCredentialsEnvVarReader(
+                        API_KEY_ENV_VAR_NAME,
+                        CLIENT_ID_ENV_VAR_NAME,
+                        CLIENT_SECRET_ENV_VAR_NAME));
     }
 
     public YouTubePlaylist create(SpotifyPlaylist source) throws InterruptedException {
