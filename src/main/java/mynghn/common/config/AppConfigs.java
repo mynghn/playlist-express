@@ -24,7 +24,7 @@ public class AppConfigs {
         return Objects.requireNonNull(AppConfigs.class.getResource("/app.properties")).getPath();
     }
 
-    public String get(String configKey) {
+    public String get(AppConfigKey configKey) {
         if (configs.isEmpty()) {
             try {
                 loadConfigs(); // lazy load configs from file
@@ -33,7 +33,7 @@ public class AppConfigs {
                         "IOException occurred while reading application config file.", e);
             }
         }
-        return configs.getProperty(configKey);
+        return configs.getProperty(configKey.toString());
     }
 
     private void loadConfigs() throws IOException {

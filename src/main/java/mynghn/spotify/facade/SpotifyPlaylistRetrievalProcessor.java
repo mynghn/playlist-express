@@ -27,11 +27,12 @@ public class SpotifyPlaylistRetrievalProcessor {
     private final CredentialManager<SpotifyClientCredentials> credentialManager;
 
     public SpotifyPlaylistRetrievalProcessor() {
+        AppConfigs configs = new AppConfigs();
+
         printer = new ConsolePrinter();
 
-        AppConfigs configs = new AppConfigs();
         credentialManager = new LocalSpotifyCredentialReader(new SpotifyCredentialsJsonFileReader(
-                getResourceFullPath(configs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH.toString()))),
+                getResourceFullPath(configs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH))),
                 new SpotifyCredentialsEnvVarReader(CLIENT_ID_ENV_VAR_NAME,
                         CLIENT_SECRET_ENV_VAR_NAME));
     }
