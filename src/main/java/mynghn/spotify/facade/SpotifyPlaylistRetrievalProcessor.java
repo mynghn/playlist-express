@@ -7,7 +7,7 @@ import mynghn.common.credential.CredentialManager;
 import mynghn.common.ui.ConsolePrinter;
 import mynghn.spotify.client.SpotifyAuthClient;
 import mynghn.spotify.client.SpotifyPlaylistRetrievalClient;
-import mynghn.spotify.credential.LocalSpotifyCredentialReader;
+import mynghn.spotify.credential.LocalSpotifyCredentialsReader;
 import mynghn.spotify.credential.SpotifyClientCredentials;
 import mynghn.spotify.credential.SpotifyCredentialsEnvVarReader;
 import mynghn.spotify.credential.SpotifyCredentialsJsonFileReader;
@@ -31,7 +31,7 @@ public class SpotifyPlaylistRetrievalProcessor {
 
         printer = new ConsolePrinter();
 
-        credentialManager = new LocalSpotifyCredentialReader(new SpotifyCredentialsJsonFileReader(
+        credentialManager = new LocalSpotifyCredentialsReader(new SpotifyCredentialsJsonFileReader(
                 getResourceFullPath(configs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH))),
                 new SpotifyCredentialsEnvVarReader(CLIENT_ID_ENV_VAR_NAME,
                         CLIENT_SECRET_ENV_VAR_NAME));

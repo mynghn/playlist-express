@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import mynghn.common.credential.CredentialManager;
 
 @RequiredArgsConstructor
-public class LocalSpotifyCredentialReader implements CredentialManager<SpotifyClientCredentials> {
+public class LocalSpotifyCredentialsReader implements CredentialManager<SpotifyClientCredentials> {
 
     private final SpotifyCredentialsJsonFileReader fileReader;
     private final SpotifyCredentialsEnvVarReader envVarReader;

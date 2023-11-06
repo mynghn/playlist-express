@@ -12,7 +12,7 @@ import mynghn.common.util.JsonFileReader;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-class LocalSpotifyCredentialReaderTest {
+class LocalSpotifyCredentialsReaderTest {
 
     @Test
     void spotifyCredentialsLoadedFromFileAndProvided() {
@@ -22,7 +22,7 @@ class LocalSpotifyCredentialReaderTest {
         final String testClientId = "Test ID";
         final String testClientSecret = "Test Secret";
 
-        final LocalSpotifyCredentialReader sut = new LocalSpotifyCredentialReader(
+        final LocalSpotifyCredentialsReader sut = new LocalSpotifyCredentialsReader(
                 new SpotifyCredentialsJsonFileReader(testCredentialsPath),
                 mock(SpotifyCredentialsEnvVarReader.class));
 
@@ -43,16 +43,16 @@ class LocalSpotifyCredentialReaderTest {
                 testClientSecret);
         final String invalidFilePath = "No File";
 
-        // Stub SpotifyCredentialsJsonFileReader
+        // Stub YouTubeCredentialsJsonFileReader
         final SpotifyCredentialsJsonFileReader spyFileReader = spy(
                 new SpotifyCredentialsJsonFileReader(invalidFilePath));
 
-        // Stub SpotifyCredentialsEnvVarReader
+        // Stub YouTubeCredentialsEnvVarReader
         final SpotifyCredentialsEnvVarReader mockEnvVarReader = mock(
                 SpotifyCredentialsEnvVarReader.class);
         when(mockEnvVarReader.read()).thenReturn(testCredentials);
 
-        final LocalSpotifyCredentialReader sut = new LocalSpotifyCredentialReader(spyFileReader,
+        final LocalSpotifyCredentialsReader sut = new LocalSpotifyCredentialsReader(spyFileReader,
                 mockEnvVarReader);
 
         /* Act & Assert within JsonFileReader static mocked context */
