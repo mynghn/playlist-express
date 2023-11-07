@@ -15,10 +15,10 @@ import org.mockito.MockedStatic;
 class LocalSpotifyCredentialsReaderTest {
 
     @Test
-    void spotifyCredentialsLoadedFromFileAndProvided() {
+    void spotifyCredentialsLoadedFromFile() {
         /* Arrange */
         final String testCredentialsPath = Objects.requireNonNull(
-                getClass().getResource("/credential/test_credentials.json")).getFile();
+                getClass().getResource("/credential/spotify/test_credentials.json")).getFile();
         final String testClientId = "Test ID";
         final String testClientSecret = "Test Secret";
 
@@ -35,7 +35,7 @@ class LocalSpotifyCredentialsReaderTest {
     }
 
     @Test
-    void spotifyCredentialsLoadedFromEnvVarsAndProvided() {
+    void spotifyCredentialsLoadedFromEnvVarsIfNoFileFound() {
         /* Arrange */
         final String testClientId = "Test ID";
         final String testClientSecret = "Test Secret";
@@ -56,12 +56,13 @@ class LocalSpotifyCredentialsReaderTest {
                 mockEnvVarReader);
 
         /* Act & Assert within JsonFileReader static mocked context */
-        try (MockedStatic<JsonFileReader> mockJsonFileReader = mockStatic(JsonFileReader.class)) {
+        try (final MockedStatic<JsonFileReader> mockJsonFileReader = mockStatic(
+                JsonFileReader.class)) {
             mockJsonFileReader.when(() -> JsonFileReader.readIfFound(invalidFilePath,
                     SpotifyClientCredentials.class)).thenReturn(Optional.empty());
 
             // Act
-            SpotifyClientCredentials credentialsFromSUT = sut.getCredentials();
+            final SpotifyClientCredentials credentialsFromSUT = sut.getCredentials();
 
             // Assert
             assertEquals(testCredentials, credentialsFromSUT);
