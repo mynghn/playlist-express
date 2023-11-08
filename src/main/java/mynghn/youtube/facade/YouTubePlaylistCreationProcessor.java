@@ -1,6 +1,5 @@
 package mynghn.youtube.facade;
 
-import feign.FeignException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
@@ -18,11 +17,12 @@ import mynghn.youtube.credential.LocalYouTubeCredentialsLazyReader;
 import mynghn.youtube.credential.YouTubeClientCredentials;
 import mynghn.youtube.credential.YouTubeCredentialsEnvVarReader;
 import mynghn.youtube.credential.YouTubeCredentialsJsonFileReader;
-import mynghn.youtube.message.auth.response.YouTubeAuthStep1Response;
+import mynghn.youtube.message.auth.response.YouTubeAuthFactorResponse;
 import mynghn.youtube.message.auth.response.YouTubeAuthTokenResponse;
 import mynghn.youtube.message.creation.response.YouTubePlaylistCreationResponse;
 import mynghn.youtube.message.search.response.YouTubeSearchResult;
 import mynghn.youtube.model.YouTubePlaylist;
+import mynghn.youtube.polling.YouTubeAuthPollingAgent;
 import mynghn.youtube.util.YouTubePlaylistLinkBuilder;
 import mynghn.youtube.util.YouTubeVideoFinder;
 
@@ -59,7 +59,7 @@ public class YouTubePlaylistCreationProcessor {
                         CLIENT_SECRET_ENV_VAR_NAME));
     }
 
-    public YouTubePlaylist create(SpotifyPlaylist source) throws InterruptedException {
+    public YouTubePlaylist create(SpotifyPlaylist source) {
         // search for corresponding videos
         printer.print("Searching for YouTube videos match tracks in source playlist...");
 
@@ -72,16 +72,11 @@ public class YouTubePlaylistCreationProcessor {
         printer.print("YouTube videos search done!");
 
         // authorization for playlist creation
-        printer.print("Authorization for YouTube playlist creation in progress...");
-
-        final YouTubeAuthTokenResponse authResponse = doAuthorization(
-                credentialManager.getCredentials());
-
-        printer.print("YouTube API authorization done!");
+        final YouTubeAuthTokenResponse authTokenResponse = doAuthorization();
 
         // connect creation client
         final YouTubePlaylistCreationClient creationClient = YouTubePlaylistCreationClient.connect(
-                authResponse.accessToken());
+                authTokenResponse.accessToken());
 
         // create playlist
         printer.print("Generating a playlist copy in your YouTube account...");
@@ -112,41 +107,50 @@ public class YouTubePlaylistCreationProcessor {
         return searchResultOptional;
     }
 
-    // FIXME: Refactor to independent responsibility
-    private YouTubeAuthTokenResponse doAuthorization(YouTubeClientCredentials credentials)
-            throws InterruptedException {
-        YouTubeAuthStep1Response step1Response = authClient.requestDeviceAndUserCodes(
+    private YouTubeAuthTokenResponse doAuthorization() {
+        printer.print("Authorization for YouTube playlist creation in progress...");
+
+        YouTubeClientCredentials credentials = credentialManager.getCredentials();
+
+        // Request device code & user code first
+        YouTubeAuthFactorResponse authFactorResponse = authClient.requestDeviceAndUserCodes(
                 credentials.clientId());
 
+        // Display instructions for the next step user verification
+        displayUserVerificationInstructions(authFactorResponse.verificationUrl(),
+                authFactorResponse.userCode());
+
+        YouTubeAuthPollingAgent authPollingAgent = YouTubeAuthPollingAgent.builder()
+                .authClient(authClient)
+                .clientId(credentials.clientId())
+                .clientSecret(credentials.clientSecret())
+                .deviceCode(authFactorResponse.deviceCode())
+                .build();
+
+        YouTubeAuthTokenResponse authTokenResponse = authPollingAgent.poll();
+
+        printer.print("YouTube API authorization done!");
+
+        return authTokenResponse;
+    }
+
+    private void displayUserVerificationInstructions(String verificationUrl, String userCode) {
         final String instructionMessageTemplate = """
-                To process further and create a playlist in your YouTube account, permission should be granted.
+                To process further and create a playlist in your YouTube account,
                                 
-                Please follow the steps below:
+                Please follow the steps below and grant permissions to this app:
                  
-                 1. Go to the following link: {0}
+                 1. Go to the following link:
+                 
+                    {0}
+                    
                  2. On the verification page, you will be prompted to enter a code.
+                 
                  3. Return to this message and enter the code provided below:
                  
                      Verification Code: {1}
                  """;
 
-        printer.print(
-                MessageFormat.format(instructionMessageTemplate,
-                        step1Response.verificationUrl(), step1Response.userCode()));
-
-        // polling
-        // TODO: Implement timeout
-        YouTubeAuthTokenResponse tokenResponse = null;
-        do {
-            try {
-                tokenResponse = authClient.obtainToken(credentials.clientId(),
-                        credentials.clientSecret(),
-                        step1Response.deviceCode());
-            } catch (FeignException e) {
-                Thread.sleep(3000);
-            }
-        } while (tokenResponse == null);
-
-        return tokenResponse;
+        printer.print(MessageFormat.format(instructionMessageTemplate, verificationUrl, userCode));
     }
 }
