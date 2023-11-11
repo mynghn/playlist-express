@@ -1,5 +1,7 @@
 package mynghn.youtube.message.search.response;
 
-public record YouTubeSearchResult(YouTubeSearchResultId id, YouTubeSearchResultSnippet snippet) {
+import mynghn.youtube.message.YouTubeResourceId;
+
+public record YouTubeSearchResult(YouTubeResourceId id, YouTubeSearchResultSnippet snippet) {
 
 }

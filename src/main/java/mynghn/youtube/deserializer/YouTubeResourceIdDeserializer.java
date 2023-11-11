@@ -6,23 +6,23 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
-import mynghn.youtube.message.search.response.YouTubeSearchResultId;
-import mynghn.youtube.message.search.response.YouTubeSearchResultKind;
-import mynghn.youtube.message.search.response.YouTubeVideoId;
+import mynghn.youtube.enums.YouTubeResourceKind;
+import mynghn.youtube.message.YouTubeResourceId;
+import mynghn.youtube.message.YouTubeVideoId;
 
-public class YouTubeSearchResultIdDeserializer implements JsonDeserializer<YouTubeSearchResultId> {
+public class YouTubeResourceIdDeserializer implements JsonDeserializer<YouTubeResourceId> {
 
     private static final String SEARCH_RESULT_KIND_JSON_FIELD_NAME = "kind";
 
-    private static YouTubeSearchResultKind extractKind(JsonElement json) {
-        return YouTubeSearchResultKind.of(json.getAsJsonObject()
+    private static YouTubeResourceKind extractKind(JsonElement json) {
+        return YouTubeResourceKind.of(json.getAsJsonObject()
                 .getAsJsonPrimitive(SEARCH_RESULT_KIND_JSON_FIELD_NAME).getAsString());
     }
 
     @Override
-    public YouTubeSearchResultId deserialize(JsonElement json, Type typeOfT,
+    public YouTubeResourceId deserialize(JsonElement json, Type typeOfT,
             JsonDeserializationContext context) throws JsonParseException {
-        YouTubeSearchResultKind kind = extractKind(json);
+        YouTubeResourceKind kind = extractKind(json);
         return switch (kind) {
             case VIDEO -> context.deserialize(json, YouTubeVideoId.class);
             case CHANNEL, PLAYLIST -> throw new UnsupportedOperationException(MessageFormat.format(

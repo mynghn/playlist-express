@@ -1,20 +1,20 @@
-package mynghn.youtube.message.search.response;
+package mynghn.youtube.enums;
 
 import java.text.MessageFormat;
 import java.util.Objects;
 import lombok.Getter;
 
 @Getter
-public enum YouTubeSearchResultKind {
+public enum YouTubeResourceKind {
     VIDEO("youtube#video"), CHANNEL("youtube#channel"), PLAYLIST("youtube#playlist");
 
     private final String value;
 
-    YouTubeSearchResultKind(String value) {
+    YouTubeResourceKind(String value) {
         this.value = value;
     }
 
-    public static YouTubeSearchResultKind of(String kind) {
+    public static YouTubeResourceKind of(String kind) {
         Objects.requireNonNull(kind);
         if (kind.equals(VIDEO.value)) {
             return VIDEO;

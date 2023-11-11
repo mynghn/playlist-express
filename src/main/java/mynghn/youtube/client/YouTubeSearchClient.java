@@ -10,12 +10,12 @@ import feign.RequestLine;
 import feign.gson.DoubleToIntMapTypeAdapter;
 import feign.gson.GsonDecoder;
 import java.util.Map;
-import mynghn.youtube.deserializer.YouTubeSearchResultIdDeserializer;
+import mynghn.youtube.deserializer.YouTubeResourceIdDeserializer;
 import mynghn.youtube.enums.BaseUrl;
 import mynghn.youtube.enums.EndPointTemplates;
+import mynghn.youtube.message.YouTubeResourceId;
 import mynghn.youtube.message.search.request.YouTubeSearchQueryParams;
 import mynghn.youtube.message.search.response.YouTubeSearchResponse;
-import mynghn.youtube.message.search.response.YouTubeSearchResultId;
 
 public interface YouTubeSearchClient {
 
@@ -36,8 +36,8 @@ public interface YouTubeSearchClient {
                         .registerTypeAdapter(new TypeToken<Map<String, Object>>() {
                                 }.getType(),
                                 new DoubleToIntMapTypeAdapter())
-                        .registerTypeAdapter(YouTubeSearchResultId.class,
-                                new YouTubeSearchResultIdDeserializer())
+                        .registerTypeAdapter(YouTubeResourceId.class,
+                                new YouTubeResourceIdDeserializer())
                         .create()))
                 .options(new Request.Options())
                 .target(YouTubeSearchClient.class, BaseUrl.YOUTUBE_DATA_API_V3.getValue());
