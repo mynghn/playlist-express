@@ -9,7 +9,10 @@ import feign.Request;
 import feign.RequestLine;
 import feign.gson.DoubleToIntMapTypeAdapter;
 import feign.gson.GsonDecoder;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import mynghn.common.gson.deserializer.LocalDateTimeDeserializer;
 import mynghn.youtube.deserializer.YouTubeResourceIdDeserializer;
 import mynghn.youtube.enums.BaseUrl;
 import mynghn.youtube.enums.EndPointTemplates;
@@ -38,6 +41,8 @@ public interface YouTubeSearchClient {
                                 new DoubleToIntMapTypeAdapter())
                         .registerTypeAdapter(YouTubeResourceId.class,
                                 new YouTubeResourceIdDeserializer())
+                        .registerTypeAdapter(LocalDateTime.class,
+                                new LocalDateTimeDeserializer(DateTimeFormatter.ISO_DATE_TIME))
                         .create()))
                 .options(new Request.Options())
                 .target(YouTubeSearchClient.class, BaseUrl.YOUTUBE_DATA_API_V3.getValue());

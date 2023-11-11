@@ -10,8 +10,11 @@ import feign.Request;
 import feign.RequestLine;
 import feign.gson.DoubleToIntMapTypeAdapter;
 import feign.gson.GsonDecoder;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import mynghn.common.auth.BearerAuthRequestInterceptor;
+import mynghn.common.gson.deserializer.LocalDateTimeDeserializer;
 import mynghn.youtube.deserializer.YouTubeResourceIdDeserializer;
 import mynghn.youtube.enums.BaseUrl;
 import mynghn.youtube.enums.EndPointTemplates;
@@ -40,6 +43,8 @@ public interface YouTubePlaylistCreationClient {
                                 new DoubleToIntMapTypeAdapter())
                         .registerTypeAdapter(YouTubeResourceId.class,
                                 new YouTubeResourceIdDeserializer())
+                        .registerTypeAdapter(LocalDateTime.class,
+                                new LocalDateTimeDeserializer(DateTimeFormatter.ISO_DATE_TIME))
                         .create()))
                 .requestInterceptor(new BearerAuthRequestInterceptor(accessToken))
                 .options(new Request.Options())
