@@ -19,14 +19,11 @@ public class YouTubeVideoFinder {
      * @return Optional search result object from YouTube. Empty if no matching result is found.
      */
     public Optional<YouTubeSearchResult> findVideoMatch(Track spotifyTrack) {
-        Optional<YouTubeSearchResult> searchResultOptional = Optional.empty();
+        Optional<YouTubeSearchResult> searchResultOptional = findByQuery(spotifyTrack);
 
-        if (spotifyTrack.getExternalIds().intlStdRecCode() != null) {
+        if (searchResultOptional.isEmpty()
+                && spotifyTrack.getExternalIds().intlStdRecCode() != null) {
             searchResultOptional = findByCode(spotifyTrack);
-        }
-
-        if (searchResultOptional.isEmpty()) {
-            searchResultOptional = findByQuery(spotifyTrack);
         }
 
         return searchResultOptional;
@@ -37,7 +34,7 @@ public class YouTubeVideoFinder {
                 spotifyTrack.getExternalIds().intlStdRecCode());
 
         return searchResponse.items().stream()
-                .filter((searchResult) -> YouTubeSearchResultEvaluator.match(searchResult,
+                .filter(searchResult -> YouTubeSearchResultEvaluator.lenientMatch(searchResult,
                         spotifyTrack))
                 .findFirst();
     }

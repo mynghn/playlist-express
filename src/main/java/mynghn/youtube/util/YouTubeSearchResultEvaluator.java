@@ -15,10 +15,20 @@ public class YouTubeSearchResultEvaluator {
      * @return If the YouTube search result matches with source Spotify Track
      */
     public static boolean match(YouTubeSearchResult searchResult, Track source) {
+        return strictMatch(searchResult, source);
+    }
+
+    public static boolean strictMatch(YouTubeSearchResult searchResult, Track source) {
         return containsTrackName(searchResult, source.getName()) && (
                 containsArtistsName(searchResult,
                         source.getArtists().stream().map(Artist::name).toList())
                         || containsAlbumName(searchResult, source.getAlbum().name()));
+    }
+
+    public static boolean lenientMatch(YouTubeSearchResult searchResult, Track source) {
+        return containsTrackName(searchResult, source.getName())
+                || containsArtistsName(searchResult, source.getArtists().stream().map(Artist::name).toList())
+                || containsAlbumName(searchResult, source.getAlbum().name());
     }
 
     private static boolean containsTrackName(YouTubeSearchResult searchResult, String trackName) {
