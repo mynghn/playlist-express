@@ -17,12 +17,16 @@ import mynghn.youtube.credential.LocalYouTubeCredentialsLazyReader;
 import mynghn.youtube.credential.YouTubeClientCredentials;
 import mynghn.youtube.credential.YouTubeCredentialsEnvVarReader;
 import mynghn.youtube.credential.YouTubeCredentialsJsonFileReader;
+import mynghn.youtube.message.YouTubeResourceId;
+import mynghn.youtube.message.YouTubeVideoId;
 import mynghn.youtube.message.auth.response.YouTubeAuthFactorResponse;
 import mynghn.youtube.message.auth.response.YouTubeAuthTokenResponse;
-import mynghn.youtube.message.creation.response.YouTubePlaylistCreationResponse;
+import mynghn.youtube.message.creation.response.YouTubePlaylistItemResourceResponse;
+import mynghn.youtube.message.creation.response.YouTubePlaylistResourceResponse;
 import mynghn.youtube.message.search.response.YouTubeSearchResult;
 import mynghn.youtube.model.YouTubePlaylist;
 import mynghn.youtube.polling.YouTubeAuthPollingAgent;
+import mynghn.youtube.util.PlaylistConverter;
 import mynghn.youtube.util.YouTubePlaylistLinkBuilder;
 import mynghn.youtube.util.YouTubeVideoFinder;
 
@@ -59,6 +63,18 @@ public class YouTubePlaylistCreationProcessor {
                         CLIENT_SECRET_ENV_VAR_NAME));
     }
 
+    private static YouTubePlaylistItemResourceResponse addSearchResultToPlaylist(
+            YouTubePlaylistCreationClient creationClient,
+            YouTubeSearchResult searchResult,
+            String playlistId) {
+        YouTubeResourceId searchResultId = searchResult.id();
+        if (!(searchResultId instanceof YouTubeVideoId)) {
+            throw new IllegalArgumentException("YouTube search result is not a video.");
+        }
+        return creationClient.addPlaylistItem(playlistId,
+                ((YouTubeVideoId) searchResultId).getVideoId());
+    }
+
     public YouTubePlaylist create(SpotifyPlaylist source) {
         // search for corresponding videos
         printer.print("Searching for YouTube videos match tracks in source playlist...");
@@ -81,20 +97,24 @@ public class YouTubePlaylistCreationProcessor {
         // create playlist
         printer.print("Generating a playlist copy in your YouTube account...");
 
-        final YouTubePlaylistCreationResponse playlistCreated = creationClient.createPlaylist(
-                "title",
-                "description");
+        final YouTubePlaylistResourceResponse emptyPlaylist = creationClient.createPlaylist(
+                source.name(),
+                source.description());
 
         // insert playlist items
-        final String playlistId = playlistCreated.id();
-        searchResults.forEach((searchResult) -> creationClient.addPlaylistItem(playlistId,
-                "Video ID from search result" // FIXME: Replace w/ real video ID from search result
-        ));
+        List<YouTubePlaylistItemResourceResponse> playlistItemsAdded = searchResults.stream()
+                .map(searchResult -> addSearchResultToPlaylist(creationClient,
+                        searchResult,
+                        emptyPlaylist.id()))
+                .toList();
 
-        printer.print(MessageFormat.format("YouTube playlist generation done!\n\t{0}",
-                YouTubePlaylistLinkBuilder.build(playlistId)));
+        final YouTubePlaylist youtubePlaylist = PlaylistConverter.fromResponse(emptyPlaylist,
+                playlistItemsAdded);
 
-        return new YouTubePlaylist(); // FIXME: Build YouTube playlist object with real data
+        printer.print(MessageFormat.format("YouTube playlist created!\n\t{0}",
+                YouTubePlaylistLinkBuilder.build(youtubePlaylist)));
+
+        return youtubePlaylist;
     }
 
     private Optional<YouTubeSearchResult> searchTrackAndNotifyIfNotFound(Track spotifyTrack) {
