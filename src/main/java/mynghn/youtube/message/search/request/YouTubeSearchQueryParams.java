@@ -12,17 +12,30 @@ public record YouTubeSearchQueryParams(String part,
                                        String q,
                                        int maxResults) {
 
-    @Builder
+    private static final String DEFAULT_PART = "snippet";
+    private static final String DEFAULT_TYPE = "video";
+
     public YouTubeSearchQueryParams(String topicId,
             String videoCategoryId,
             String q,
             int maxResults) {
-        this("snippet", "video",
+        this(DEFAULT_PART, DEFAULT_TYPE,
                 topicId, videoCategoryId, q, maxResults);
     }
 
-    @Builder(builderMethodName = "musicQueryBuilder")
+    public static YouTubeSearchQueryParamsBuilder builder() {
+        return YouTubeSearchQueryParams.fullBuilder()
+                .part(DEFAULT_PART)
+                .type(DEFAULT_TYPE);
+    }
+
     public YouTubeSearchQueryParams(String q, int maxResults) {
         this(Topic.MUSIC.getId(), VideoCategory.MUSIC.getId(), q, maxResults);
+    }
+
+    public static YouTubeSearchQueryParamsBuilder musicQueryBuilder() {
+        return YouTubeSearchQueryParams.builder()
+                .topicId(Topic.MUSIC.getId())
+                .videoCategoryId(VideoCategory.MUSIC.getId());
     }
 }
