@@ -3,6 +3,7 @@ package mynghn.youtube.facade;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import mynghn.common.config.AppConfigKey;
 import mynghn.common.config.AppConfigs;
 import mynghn.common.credential.CredentialManager;
@@ -30,6 +31,7 @@ import mynghn.youtube.service.YouTubeVideoFinder;
 import mynghn.youtube.util.PlaylistConverter;
 import mynghn.youtube.util.YouTubePlaylistLinkBuilder;
 
+@RequiredArgsConstructor
 public class YouTubePlaylistCreationProcessor {
 
     private static final String API_KEY_ENV_VAR_NAME = "YOUTUBE_API_KEY";
