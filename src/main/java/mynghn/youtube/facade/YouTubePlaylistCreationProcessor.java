@@ -71,7 +71,7 @@ public class YouTubePlaylistCreationProcessor {
         if (!(searchResultId instanceof YouTubeVideoId)) {
             throw new IllegalArgumentException("YouTube search result is not a video.");
         }
-        return creationClient.addPlaylistItem(playlistId,
+        return creationClient.addVideoToPlaylist(playlistId,
                 ((YouTubeVideoId) searchResultId).getVideoId());
     }
 

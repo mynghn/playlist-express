@@ -88,7 +88,7 @@ public interface YouTubePlaylistCreationClient {
     @RequestLine(EndPointTemplates.PLAYLIST_ITEMS_INSERT + "?part=snippet")
     @Headers("Content-Type: application/json")
     @Body("%7B\"snippet\": %7B\"playlistId\": \"{playlistId}\", \"resourceId\":%7B\"kind\": \"youtube#video\", \"videoId\": \"{videoId}\"%7D%7D%7D")
-    YouTubePlaylistItemResourceResponse addPlaylistItem(@Param("playlistId") String playlistId,
+    YouTubePlaylistItemResourceResponse addVideoToPlaylist(@Param("playlistId") String playlistId,
             @Param("videoId") String videoId);
 
     /**
@@ -102,7 +102,7 @@ public interface YouTubePlaylistCreationClient {
     @RequestLine(EndPointTemplates.PLAYLIST_ITEMS_INSERT + "?part=snippet")
     @Headers("Content-Type: application/json")
     @Body("%7B\"snippet\": %7B\"playlistId\": \"{playlistId}\", \"resourceId\":%7B\"kind\": \"youtube#video\", \"videoId\": \"{videoId}\"%7D, \"position\": {position}%7D%7D")
-    YouTubePlaylistItemResourceResponse insertPlaylistItem(@Param("playlistId") String playlistId,
+    YouTubePlaylistItemResourceResponse insertVideoToPlaylist(@Param("playlistId") String playlistId,
             @Param("videoId") String videoId,
             @Param("position") int position);
 }
