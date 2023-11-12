@@ -46,7 +46,7 @@ public class YouTubeVideoFinder {
                 YouTubeSearchQueryBuilder.build(spotifyTrack));
 
         return searchResponse.items().stream()
-                .filter((searchResult) -> YouTubeSearchResultEvaluator.match(searchResult,
+                .filter((searchResult) -> YouTubeSearchResultEvaluator.strictMatch(searchResult,
                         spotifyTrack))
                 .findFirst();
     }
