@@ -1,4 +1,4 @@
-package mynghn.youtube.util;
+package mynghn.youtube.service;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -6,6 +6,8 @@ import mynghn.spotify.model.Track;
 import mynghn.youtube.client.YouTubeSearchClient;
 import mynghn.youtube.message.search.response.YouTubeSearchResponse;
 import mynghn.youtube.message.search.response.YouTubeSearchResult;
+import mynghn.youtube.util.YouTubeSearchQueryBuilder;
+import mynghn.youtube.util.YouTubeSearchResultEvaluator;
 
 @RequiredArgsConstructor
 public class YouTubeVideoFinder {

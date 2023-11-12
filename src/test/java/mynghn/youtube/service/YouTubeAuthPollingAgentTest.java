@@ -1,4 +1,4 @@
-package mynghn.youtube.polling;
+package mynghn.youtube.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;

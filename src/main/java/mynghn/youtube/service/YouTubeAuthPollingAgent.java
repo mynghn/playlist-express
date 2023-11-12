@@ -1,4 +1,4 @@
-package mynghn.youtube.polling;
+package mynghn.youtube.service;
 
 import com.github.rholder.retry.RetryException;
 import com.github.rholder.retry.Retryer;

@@ -25,10 +25,10 @@ import mynghn.youtube.message.creation.response.YouTubePlaylistItemResourceRespo
 import mynghn.youtube.message.creation.response.YouTubePlaylistResourceResponse;
 import mynghn.youtube.message.search.response.YouTubeSearchResult;
 import mynghn.youtube.model.YouTubePlaylist;
-import mynghn.youtube.polling.YouTubeAuthPollingAgent;
+import mynghn.youtube.service.YouTubeAuthPollingAgent;
+import mynghn.youtube.service.YouTubeVideoFinder;
 import mynghn.youtube.util.PlaylistConverter;
 import mynghn.youtube.util.YouTubePlaylistLinkBuilder;
-import mynghn.youtube.util.YouTubeVideoFinder;
 
 public class YouTubePlaylistCreationProcessor {
 

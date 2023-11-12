@@ -1,4 +1,4 @@
-package mynghn.youtube.util;
+package mynghn.youtube.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,6 +13,7 @@ import mynghn.youtube.client.YouTubeSearchClient;
 import mynghn.youtube.message.search.response.YouTubeSearchResponse;
 import mynghn.youtube.message.search.response.YouTubeSearchResult;
 import mynghn.youtube.message.search.response.YouTubeSearchResultSnippet;
+import mynghn.youtube.util.YouTubeSearchQueryBuilder;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
