@@ -2,9 +2,12 @@ package mynghn.spotify.model;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class Track extends SpotifyPlaylistItem {
 
     private final Album album;
@@ -25,6 +28,7 @@ public class Track extends SpotifyPlaylistItem {
     @SerializedName("track_number")
     private final int trackNumber;
 
+    @Builder
     public Track(String id,
             Album album,
             List<Artist> artists,

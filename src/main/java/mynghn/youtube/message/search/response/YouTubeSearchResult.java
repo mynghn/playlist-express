@@ -1,6 +1,7 @@
 package mynghn.youtube.message.search.response;
 
-// TODO: Define properties
-public record YouTubeSearchResult() {
+import mynghn.youtube.message.YouTubeResourceId;
+
+public record YouTubeSearchResult(YouTubeResourceId id, YouTubeSearchResultSnippet snippet) {
 
 }

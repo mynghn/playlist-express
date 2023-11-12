@@ -1,12 +1,22 @@
 package mynghn.youtube.client;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import feign.Feign;
 import feign.Headers;
 import feign.QueryMap;
 import feign.Request;
 import feign.RequestLine;
+import feign.gson.DoubleToIntMapTypeAdapter;
+import feign.gson.GsonDecoder;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import mynghn.common.gson.deserializer.LocalDateTimeDeserializer;
+import mynghn.youtube.deserializer.YouTubeResourceIdDeserializer;
 import mynghn.youtube.enums.BaseUrl;
 import mynghn.youtube.enums.EndPointTemplates;
+import mynghn.youtube.message.YouTubeResourceId;
 import mynghn.youtube.message.search.request.YouTubeSearchQueryParams;
 import mynghn.youtube.message.search.response.YouTubeSearchResponse;
 
@@ -22,9 +32,18 @@ public interface YouTubeSearchClient {
      */
     static YouTubeSearchClient connect(String apiKey) {
         return Feign.builder()
-                // TODO: Add response decoder
                 // TODO: Add error decoder
                 .requestInterceptor(new ApiKeyEmbedRequestInterceptor(apiKey))
+                .decoder(new GsonDecoder(new GsonBuilder()
+                        .setPrettyPrinting()
+                        .registerTypeAdapter(new TypeToken<Map<String, Object>>() {
+                                }.getType(),
+                                new DoubleToIntMapTypeAdapter())
+                        .registerTypeAdapter(YouTubeResourceId.class,
+                                new YouTubeResourceIdDeserializer())
+                        .registerTypeAdapter(LocalDateTime.class,
+                                new LocalDateTimeDeserializer(DateTimeFormatter.ISO_DATE_TIME))
+                        .create()))
                 .options(new Request.Options())
                 .target(YouTubeSearchClient.class, BaseUrl.YOUTUBE_DATA_API_V3.getValue());
     }

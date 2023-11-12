@@ -1,6 +1,7 @@
 package mynghn;
 
 import java.util.concurrent.Callable;
+import mynghn.common.config.AppConfigs;
 import mynghn.spotify.facade.SpotifyPlaylistRetrievalProcessor;
 import mynghn.spotify.model.SpotifyPlaylist;
 import mynghn.youtube.facade.YouTubePlaylistCreationProcessor;
@@ -20,10 +21,11 @@ public class App implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        SpotifyPlaylistRetrievalProcessor retrievalProcessor = new SpotifyPlaylistRetrievalProcessor();
+        AppConfigs configs = new AppConfigs();
+        SpotifyPlaylistRetrievalProcessor retrievalProcessor = new SpotifyPlaylistRetrievalProcessor(configs);
         SpotifyPlaylist spotifyPlaylist = retrievalProcessor.fetch(srcLink);
 
-        YouTubePlaylistCreationProcessor creationProcessor = new YouTubePlaylistCreationProcessor();
+        YouTubePlaylistCreationProcessor creationProcessor = new YouTubePlaylistCreationProcessor(configs);
         creationProcessor.create(spotifyPlaylist);
 
         return 0;

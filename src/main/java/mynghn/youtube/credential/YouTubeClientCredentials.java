@@ -1,5 +1,7 @@
 package mynghn.youtube.credential;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Data object containing registered Google Cloud project's client credentials
  *
@@ -7,6 +9,8 @@ package mynghn.youtube.credential;
  * @param clientId     OAuth 2.0 Client ID of a registered Google Cloud project
  * @param clientSecret OAuth 2.0 Client Secret of a registered Google Cloud project
  */
-public record YouTubeClientCredentials(String apiKey, String clientId, String clientSecret) {
+public record YouTubeClientCredentials(@SerializedName("api_key") String apiKey,
+                                       @SerializedName("client_id") String clientId,
+                                       @SerializedName("client_secret") String clientSecret) {
 
 }

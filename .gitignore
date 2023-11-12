@@ -65,3 +65,7 @@ bin/
 
 ### API credentials ###
 **/resources/**/credential/*
+!**/test/**/resources/**/credential/*
+
+# Application configuration files #
+*.properties

@@ -1,11 +1,13 @@
 package mynghn.spotify.facade;
 
+import mynghn.common.config.AppConfigKey;
 import mynghn.common.config.AppConfigs;
 import mynghn.common.credential.CredentialManager;
 import mynghn.common.ui.ConsolePrinter;
+import mynghn.common.util.FileUtils;
 import mynghn.spotify.client.SpotifyAuthClient;
 import mynghn.spotify.client.SpotifyPlaylistRetrievalClient;
-import mynghn.spotify.credential.LocalSpotifyCredentialReader;
+import mynghn.spotify.credential.LocalSpotifyCredentialsReader;
 import mynghn.spotify.credential.SpotifyClientCredentials;
 import mynghn.spotify.credential.SpotifyCredentialsEnvVarReader;
 import mynghn.spotify.credential.SpotifyCredentialsJsonFileReader;
@@ -17,15 +19,26 @@ import mynghn.spotify.util.SpotifyLinkParser;
 
 public class SpotifyPlaylistRetrievalProcessor {
 
+    private static final String CLIENT_ID_ENV_VAR_NAME = "SPOTIFY_CLIENT_ID";
+    private static final String CLIENT_SECRET_ENV_VAR_NAME = "SPOTIFY_CLIENT_SECRET";
+
     private final ConsolePrinter printer;
 
     private final CredentialManager<SpotifyClientCredentials> credentialManager;
 
-    public SpotifyPlaylistRetrievalProcessor() {
+    public SpotifyPlaylistRetrievalProcessor(AppConfigs configs) {
         printer = new ConsolePrinter();
-        credentialManager = new LocalSpotifyCredentialReader(
-                new SpotifyCredentialsJsonFileReader(new AppConfigs()),
-                new SpotifyCredentialsEnvVarReader());
+
+        credentialManager = buildCredentialManager(configs);
+    }
+
+    private static CredentialManager<SpotifyClientCredentials> buildCredentialManager(
+            AppConfigs configs) {
+        return new LocalSpotifyCredentialsReader(
+                new SpotifyCredentialsJsonFileReader(FileUtils.getResourceFullPath(
+                        configs.get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH))),
+                new SpotifyCredentialsEnvVarReader(CLIENT_ID_ENV_VAR_NAME,
+                        CLIENT_SECRET_ENV_VAR_NAME));
     }
 
     private static SpotifyAuthClient buildAuthClient() {

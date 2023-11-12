@@ -1,133 +1,178 @@
 package mynghn.youtube.facade;
 
-import feign.FeignException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import mynghn.common.config.AppConfigKey;
+import mynghn.common.config.AppConfigs;
 import mynghn.common.credential.CredentialManager;
 import mynghn.common.ui.ConsolePrinter;
+import mynghn.common.util.FileUtils;
 import mynghn.spotify.model.SpotifyPlaylist;
 import mynghn.spotify.model.Track;
 import mynghn.youtube.client.YouTubeAuthClient;
 import mynghn.youtube.client.YouTubePlaylistCreationClient;
 import mynghn.youtube.client.YouTubeSearchClient;
+import mynghn.youtube.credential.LocalYouTubeCredentialsLazyReader;
 import mynghn.youtube.credential.YouTubeClientCredentials;
-import mynghn.youtube.credential.YouTubeCredentialManager;
-import mynghn.youtube.message.auth.response.YouTubeAuthStep1Response;
+import mynghn.youtube.credential.YouTubeCredentialsEnvVarReader;
+import mynghn.youtube.credential.YouTubeCredentialsJsonFileReader;
+import mynghn.youtube.message.YouTubeResourceId;
+import mynghn.youtube.message.YouTubeVideoId;
+import mynghn.youtube.message.auth.response.YouTubeAuthFactorResponse;
 import mynghn.youtube.message.auth.response.YouTubeAuthTokenResponse;
-import mynghn.youtube.message.creation.response.YouTubePlaylistCreationResponse;
-import mynghn.youtube.message.search.response.YouTubeSearchResponse;
+import mynghn.youtube.message.creation.response.YouTubePlaylistItemResourceResponse;
+import mynghn.youtube.message.creation.response.YouTubePlaylistResourceResponse;
 import mynghn.youtube.message.search.response.YouTubeSearchResult;
 import mynghn.youtube.model.YouTubePlaylist;
+import mynghn.youtube.service.YouTubeAuthPollingAgent;
+import mynghn.youtube.service.YouTubeVideoFinder;
+import mynghn.youtube.util.PlaylistConverter;
 import mynghn.youtube.util.YouTubePlaylistLinkBuilder;
-import mynghn.youtube.util.YouTubeSearchResultEvaluator;
 
+@RequiredArgsConstructor
 public class YouTubePlaylistCreationProcessor {
 
+    private static final String API_KEY_ENV_VAR_NAME = "YOUTUBE_API_KEY";
+    private static final String CLIENT_ID_ENV_VAR_NAME = "YOUTUBE_CLIENT_ID";
+    private static final String CLIENT_SECRET_ENV_VAR_NAME = "YOUTUBE_CLIENT_SECRET";
+
     private final ConsolePrinter printer;
-
     private final CredentialManager<YouTubeClientCredentials> credentialManager;
-
-    private final YouTubeSearchClient searchClient;
     private final YouTubeAuthClient authClient;
+    private final YouTubeVideoFinder videoFinder;
 
-    public YouTubePlaylistCreationProcessor() {
+    public YouTubePlaylistCreationProcessor(AppConfigs configs) {
         printer = new ConsolePrinter();
-        credentialManager = new YouTubeCredentialManager();
 
-        final YouTubeClientCredentials credentials = credentialManager.getCredentials();
+        credentialManager = buildCredentialManager(configs);
 
-        searchClient = YouTubeSearchClient.connect(credentials.apiKey());
+        videoFinder = new YouTubeVideoFinder(
+                YouTubeSearchClient.connect(credentialManager.getCredentials().apiKey()));
+
         authClient = YouTubeAuthClient.connect();
     }
 
-    public YouTubePlaylist create(SpotifyPlaylist source) throws InterruptedException {
+    private static CredentialManager<YouTubeClientCredentials> buildCredentialManager(
+            AppConfigs configs) {
+        return new LocalYouTubeCredentialsLazyReader(
+                new YouTubeCredentialsJsonFileReader(FileUtils.getResourceFullPath(
+                        configs.get(AppConfigKey.YOUTUBE_CREDENTIAL_PATH))),
+                new YouTubeCredentialsEnvVarReader(
+                        API_KEY_ENV_VAR_NAME,
+                        CLIENT_ID_ENV_VAR_NAME,
+                        CLIENT_SECRET_ENV_VAR_NAME));
+    }
+
+    private static YouTubePlaylistItemResourceResponse addSearchResultToPlaylist(
+            YouTubePlaylistCreationClient creationClient,
+            YouTubeSearchResult searchResult,
+            String playlistId) {
+        YouTubeResourceId searchResultId = searchResult.id();
+        if (!(searchResultId instanceof YouTubeVideoId)) {
+            throw new IllegalArgumentException("YouTube search result is not a video.");
+        }
+        return creationClient.addVideoToPlaylist(playlistId,
+                ((YouTubeVideoId) searchResultId).getVideoId());
+    }
+
+    public YouTubePlaylist create(SpotifyPlaylist source) {
         // search for corresponding videos
-        printer.print("Searching for YouTube videos to put in playlist...");
+        printer.print("Searching for YouTube videos match tracks in source playlist...");
 
         final List<YouTubeSearchResult> searchResults = source.tracks().stream()
-                .map(this::findCorrespondingVideo)
-                .filter(Optional::isPresent) // FIXME: Handle properly w/ search failures
+                .map(this::searchTrackAndNotifyIfNotFound)
+                .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
 
         printer.print("YouTube videos search done!");
 
         // authorization for playlist creation
-        printer.print("Authorization for YouTube playlist creation in progress...");
-
-        final YouTubeAuthTokenResponse authResponse = doAuthorization(
-                credentialManager.getCredentials());
-
-        printer.print("YouTube API authorization done!");
+        final YouTubeAuthTokenResponse authTokenResponse = doAuthorization();
 
         // connect creation client
         final YouTubePlaylistCreationClient creationClient = YouTubePlaylistCreationClient.connect(
-                authResponse.accessToken());
+                authTokenResponse.accessToken());
 
         // create playlist
         printer.print("Generating a playlist copy in your YouTube account...");
 
-        final YouTubePlaylistCreationResponse playlistCreated = creationClient.createPlaylist(
-                "title",
-                "description");
+        final YouTubePlaylistResourceResponse emptyPlaylist = creationClient.createPlaylist(
+                source.name(),
+                source.description());
 
         // insert playlist items
-        final String playlistId = playlistCreated.id();
-        searchResults.forEach((searchResult) -> creationClient.addPlaylistItem(playlistId,
-                "Video ID from search result" // FIXME: Replace w/ real video ID from search result
-        ));
+        List<YouTubePlaylistItemResourceResponse> playlistItemsAdded = searchResults.stream()
+                .map(searchResult -> addSearchResultToPlaylist(creationClient,
+                        searchResult,
+                        emptyPlaylist.id()))
+                .toList();
 
-        printer.print(MessageFormat.format("YouTube playlist generation done!\n\t{0}",
-                YouTubePlaylistLinkBuilder.build(playlistId)));
+        final YouTubePlaylist youtubePlaylist = PlaylistConverter.fromResponse(emptyPlaylist,
+                playlistItemsAdded);
 
-        return new YouTubePlaylist(); // FIXME: Build YouTube playlist object with real data
+        printer.print(MessageFormat.format("YouTube playlist created!\n\t{0}",
+                YouTubePlaylistLinkBuilder.build(youtubePlaylist)));
+
+        return youtubePlaylist;
     }
 
-    private Optional<YouTubeSearchResult> findCorrespondingVideo(Track spotifyTrack) {
-        YouTubeSearchResponse searchResponse = searchClient.searchMusic(
-                ""); // FIXME: Replace w/ real query
-        return searchResponse.items().stream()
-                .filter((searchResult) -> YouTubeSearchResultEvaluator.match(searchResult,
-                        spotifyTrack))
-                .findFirst();
+    private Optional<YouTubeSearchResult> searchTrackAndNotifyIfNotFound(Track spotifyTrack) {
+        Optional<YouTubeSearchResult> searchResultOptional = videoFinder.findVideoMatch(
+                spotifyTrack);
+        if (searchResultOptional.isEmpty()) {
+            printer.print(
+                    MessageFormat.format("Failed to find YouTube video for {0}", spotifyTrack));
+        }
+        return searchResultOptional;
     }
 
-    // FIXME: Refactor to independent responsibility
-    private YouTubeAuthTokenResponse doAuthorization(YouTubeClientCredentials credentials)
-            throws InterruptedException {
-        YouTubeAuthStep1Response step1Response = authClient.requestDeviceAndUserCodes(
+    private YouTubeAuthTokenResponse doAuthorization() {
+        printer.print("Authorization for YouTube playlist creation in progress...");
+
+        YouTubeClientCredentials credentials = credentialManager.getCredentials();
+
+        // Request device code & user code first
+        YouTubeAuthFactorResponse authFactorResponse = authClient.requestDeviceAndUserCodes(
                 credentials.clientId());
 
+        // Display instructions for the next step user verification
+        displayUserVerificationInstructions(authFactorResponse.verificationUrl(),
+                authFactorResponse.userCode());
+
+        YouTubeAuthPollingAgent authPollingAgent = YouTubeAuthPollingAgent.builder()
+                .authClient(authClient)
+                .clientId(credentials.clientId())
+                .clientSecret(credentials.clientSecret())
+                .deviceCode(authFactorResponse.deviceCode())
+                .build();
+
+        YouTubeAuthTokenResponse authTokenResponse = authPollingAgent.poll();
+
+        printer.print("YouTube API authorization done!");
+
+        return authTokenResponse;
+    }
+
+    private void displayUserVerificationInstructions(String verificationUrl, String userCode) {
         final String instructionMessageTemplate = """
-                To process further and create a playlist in your YouTube account, permission should be granted.
-                
-                Please follow the steps below:
+                To process further and create a playlist in your YouTube account,
+                                
+                Please follow the steps below and grant permissions to this app:
                  
-                 1. Go to the following link: {0}
+                 1. Go to the following link:
+                 
+                    {0}
+                    
                  2. On the verification page, you will be prompted to enter a code.
+                 
                  3. Return to this message and enter the code provided below:
                  
                      Verification Code: {1}
                  """;
 
-        printer.print(
-                MessageFormat.format(instructionMessageTemplate,
-                        step1Response.verificationUrl(), step1Response.userCode()));
-
-        // polling
-        // TODO: Implement timeout
-        YouTubeAuthTokenResponse tokenResponse = null;
-        do {
-            try {
-                tokenResponse = authClient.obtainToken(credentials.clientId(),
-                        credentials.clientSecret(),
-                        step1Response.deviceCode());
-            } catch (FeignException e) {
-                Thread.sleep(3000);
-            }
-        } while (tokenResponse == null);
-
-        return tokenResponse;
+        printer.print(MessageFormat.format(instructionMessageTemplate, verificationUrl, userCode));
     }
 }
