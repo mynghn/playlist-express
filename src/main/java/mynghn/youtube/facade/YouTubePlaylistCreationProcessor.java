@@ -113,7 +113,7 @@ public class YouTubePlaylistCreationProcessor {
         final YouTubePlaylist youtubePlaylist = PlaylistConverter.fromResponse(emptyPlaylist,
                 playlistItemsAdded);
 
-        printer.print(MessageFormat.format("YouTube playlist created!\n\t{0}",
+        printer.print(MessageFormat.format("YouTube playlist created!\n\n : {0}",
                 YouTubePlaylistLinkBuilder.build(youtubePlaylist)));
 
         return youtubePlaylist;
@@ -170,8 +170,7 @@ public class YouTubePlaylistCreationProcessor {
                  
                  3. Return to this message and enter the code provided below:
                  
-                     Verification Code: {1}
-                 """;
+                    Verification Code: {1}""";
 
         printer.print(MessageFormat.format(instructionMessageTemplate, verificationUrl, userCode));
     }

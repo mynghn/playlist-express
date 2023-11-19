@@ -3,6 +3,7 @@ package mynghn.common.ui;
 public class ConsolePrinter {
 
     public void print(String message) {
-        // TODO: Implement console output printing feature
+        System.out.println(message);
+        System.out.println();
     }
 }
