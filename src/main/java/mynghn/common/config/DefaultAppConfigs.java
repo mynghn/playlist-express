@@ -10,7 +10,8 @@ import lombok.Getter;
 public class DefaultAppConfigs {
 
     private static final Map<AppConfigKey, String> defaultConfigsMap = Map.ofEntries(
-            new SimpleEntry<>(AppConfigKey.SPOTIFY_CREDENTIAL_PATH, "/credential/spotify/client_credentials.json")
+            new SimpleEntry<>(AppConfigKey.SPOTIFY_CREDENTIAL_PATH, "/credential/spotify/client_credentials.json"),
+            new SimpleEntry<>(AppConfigKey.YOUTUBE_CREDENTIAL_PATH, "/credential/youtube/client_credentials.json")
     );
 
     public static String get(AppConfigKey key) {
@@ -27,6 +28,10 @@ public class DefaultAppConfigs {
         // spotify credentials path
         defaultConfigs.setProperty(AppConfigKey.SPOTIFY_CREDENTIAL_PATH.toString(),
                 get(AppConfigKey.SPOTIFY_CREDENTIAL_PATH));
+
+        // youtube credentials path
+        defaultConfigs.setProperty(AppConfigKey.YOUTUBE_CREDENTIAL_PATH.toString(),
+                get(AppConfigKey.YOUTUBE_CREDENTIAL_PATH));
 
         return defaultConfigs;
     }
